@@ -16,6 +16,7 @@ public class PlayerBehaviours : MonoBehaviour
     public float offsetX, offsetY;
     public float health;
     [SerializeField] private bool isDead;
+    public SpriteRenderer hpSprite;
 
     public float colorSpeed;
     public float healthUpdateDelay;
@@ -34,17 +35,17 @@ public class PlayerBehaviours : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        healthUpdateTimer += Time.deltaTime;
-        if(healthUpdateTimer >= healthUpdateDelay)
-        {
-            shouldUpdateHealth = true;
-            healthUpdateTimer = 0;
-        }
+        //healthUpdateTimer += Time.deltaTime;
+        //if(healthUpdateTimer >= healthUpdateDelay)
+        //{
+        //    shouldUpdateHealth = true;
+        //    healthUpdateTimer = 0;
+        //}
 
-        if(shouldUpdateHealth)
-        {
-            UpdateHealth();
-        }
+        //if(shouldUpdateHealth)
+        //{
+        //    UpdateHealth();
+        //}
     }
 
     void FixedUpdate()
@@ -86,6 +87,8 @@ public class PlayerBehaviours : MonoBehaviour
         
     }
 
+
+    #region Health
     public void TakeDamage(float amount)
     {
         if (health <= 0)
@@ -95,50 +98,43 @@ public class PlayerBehaviours : MonoBehaviour
             health -= amount;
         }
     }
-    enum HealthStages
-    {
-        HEALTHY,
-        INGURED,
-        HEAVILYINJURED,
-        DEAD
-    }
-    void UpdateHealth()
-    {
-        healthUIObject.TryGetComponent(out SpriteRenderer img);
-        HealthStages healthStages = HealthStages.HEALTHY;
-        if (health >= 12) healthStages = HealthStages.HEALTHY;
-        else if (health >= 6 && health <= 11) healthStages = HealthStages.INGURED;
-        else if (health <= 5 && health >= 1) healthStages = HealthStages.HEAVILYINJURED;
-        else if (health <= 0) healthStages = HealthStages.DEAD;
-        switch(healthStages)
-        {
-            case HealthStages.HEALTHY:
-                StartCoroutine(FadeColor(new Color(168, 255, 100), img));
-                //img.color = Color.Lerp(img.color, new Color(168, 255, 100), Time.deltaTime);
-                break;
-            case HealthStages.INGURED:
-                StartCoroutine(FadeColor(new Color(49, 107, 0), img));
-                //img.color = Color.Lerp(img.color, new Color(49,107,0), Time.deltaTime);
-                break;
-            case HealthStages.HEAVILYINJURED:
-                StartCoroutine(FadeColor(new Color(63, 51, 60), img));
-                //img.color = Color.Lerp(img.color, new Color(63, 51, 60), Time.deltaTime);
-                break;
-            case HealthStages.DEAD:
-                StartCoroutine(FadeColor(new Color(63, 0, 0), img));
-                //img.color = Color.Lerp(img.color, new Color(63, 0, 0), Time.deltaTime);
-                break;
-            default:
-                break;
-        }
-    }
 
-    IEnumerator FadeColor( Color newColor, SpriteRenderer sprite)
-    {
-        var currentColor = sprite.color;
+    //enum HealthStages
+    //{
+    //    HEALTHY,
+    //    INGURED,
+    //    HEAVILYINJURED,
+    //    DEAD
+    //}
+    //void UpdateHealth()
+    //{
+    //    HealthStages healthStages = HealthStages.HEALTHY;
+    //    if (health >= 12) healthStages = HealthStages.HEALTHY;
+    //    else if (health >= 6 && health <= 11) healthStages = HealthStages.INGURED;
+    //    else if (health <= 5 && health >= 1) healthStages = HealthStages.HEAVILYINJURED;
+    //    else if (health <= 0) healthStages = HealthStages.DEAD;
+    //    switch(healthStages)
+    //    {
+    //        case HealthStages.HEALTHY:
+    //            StartCoroutine(FadeColor(new Color(168, 255, 100)));
+    //            //img.color = Color.Lerp(img.color, new Color(168, 255, 100), Time.deltaTime);
+    //            break;
+    //        case HealthStages.INGURED:
+    //            StartCoroutine(FadeColor(new Color(49, 107, 0)));
+    //            //img.color = Color.Lerp(img.color, new Color(49,107,0), Time.deltaTime);
+    //            break;
+    //        case HealthStages.HEAVILYINJURED:
+    //            StartCoroutine(FadeColor(new Color(63, 51, 60)));
+    //            //img.color = Color.Lerp(img.color, new Color(63, 51, 60), Time.deltaTime);
+    //            break;
+    //        case HealthStages.DEAD:
+    //            StartCoroutine(FadeColor(new Color(63, 0, 0)));
+    //            //img.color = Color.Lerp(img.color, new Color(63, 0, 0), Time.deltaTime);
+    //            break;
+    //        default:
+    //            break;
+    //    }
+    //}
 
-        shouldUpdateHealth = false;
-        sprite.material.color = Color.Lerp(currentColor, newColor, colorSpeed * Time.deltaTime);
-        yield return new WaitUntil(() => sprite.material.color == newColor);
-    }
+    #endregion
 }
