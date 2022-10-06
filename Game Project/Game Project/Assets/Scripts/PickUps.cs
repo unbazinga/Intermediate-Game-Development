@@ -6,6 +6,12 @@ public class PickUps : MonoBehaviour
 {
     [SerializeField] private PickUpSO PickUpDefinition;
 
+    private void Start()
+    {
+        if(this.gameObject.TryGetComponent(out SpriteRenderer spriteRenderer)) {
+            spriteRenderer.color = PickUpDefinition.PickUpColor;
+        }   
+    }
     public PickUpSO GetPickUpDefinition()
     {
         return this.PickUpDefinition;
