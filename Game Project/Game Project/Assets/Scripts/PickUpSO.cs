@@ -8,4 +8,5 @@ public class PickUpSO : ScriptableObject
     public int ScoreWorth;
     public int PickUpTime;
     public Color PickUpColor;
+
 }

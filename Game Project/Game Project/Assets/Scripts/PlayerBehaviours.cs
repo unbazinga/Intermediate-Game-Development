@@ -22,6 +22,11 @@ public class PlayerBehaviours : MonoBehaviour
     public float healthUpdateDelay;
     public float healthUpdateTimer;
     public bool shouldUpdateHealth;
+    private float currentPickUpTime;
+    private bool OnPickUp;
+    public float rotationSpeed;
+    [SerializeField] private List<PickUpSO> mPickUpSOs = new List<PickUpSO>();
+    private PickUps onPickup;
     // Start is called before the first frame update
     void Start()
     {
@@ -56,21 +61,33 @@ public class PlayerBehaviours : MonoBehaviour
             Movement();
             //Inputs();
         }
+        if(!OnPickUp)
+        {
+            currentPickUpTime = 0;
+        } else
+        {
+            PickUp();
+        }
+        var rbRot = _rb.rotation;
+        rbRot += rotationSpeed * Time.deltaTime;
+        _rb.rotation = rbRot;
     }
 
     void Movement()
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
-        if(horizontal > 0.1f || vertical > 0.1f)
+        if (horizontal > 0.1f || vertical > 0.1f || horizontal < -0.1f || vertical < -0.1f)
         {
             currentSpeed = Mathf.Lerp(currentSpeed, maxSpeed, acceleration * Time.deltaTime);
-            if(currentSpeed > maxSpeed)
+            if (currentSpeed > maxSpeed)
             {
                 currentSpeed = maxSpeed;
             }
         }
-        _rb.velocity = (new Vector3(horizontal, vertical) * (currentSpeed * 100)) * Time.deltaTime;
+        else
+            currentSpeed = Mathf.Lerp(currentSpeed, 0, _rb.drag * Time.deltaTime);
+        _rb.velocity = (new Vector3(horizontal, vertical).normalized * (currentSpeed * 100)) * Time.deltaTime;
     }
     void UpdateCameraPosition()
     {
@@ -87,6 +104,37 @@ public class PlayerBehaviours : MonoBehaviour
         
     }
 
+    void PickUp()
+    {
+        currentPickUpTime += Time.deltaTime;
+        if(currentPickUpTime >= onPickup.GetPickUpDefinition().PickUpTime)
+        {
+            if(!mPickUpSOs.Contains(onPickup.GetPickUpDefinition()))
+                mPickUpSOs.Add(onPickup.GetPickUpDefinition());
+            else 
+            onPickup.OnPickup();
+            PrintPickUps(mPickUpSOs.ToArray());
+            //Debug.Log(mPickUpSOs.ToArray().ToString());
+        }
+
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        Debug.Log("Entering Trigger");
+        if(collision.TryGetComponent(out PickUps pickUps))
+        {
+            if (mPickUpSOs.Contains(pickUps.GetPickUpDefinition()))
+                OnPickUp = false;
+            onPickup = pickUps;
+            OnPickUp = true;
+        }
+    }
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if(collision.TryGetComponent(out PickUps pickUps))
+            OnPickUp = false;
+    }
 
     #region Health
     public void TakeDamage(float amount)
@@ -98,7 +146,13 @@ public class PlayerBehaviours : MonoBehaviour
             health -= amount;
         }
     }
-
+    void PrintPickUps(PickUpSO[] pIn)
+    {
+        foreach(PickUpSO s in pIn)
+        {
+            Debug.Log(s.name); 
+        }
+    }
     //enum HealthStages
     //{
     //    HEALTHY,

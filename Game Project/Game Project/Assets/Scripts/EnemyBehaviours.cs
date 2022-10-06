@@ -16,6 +16,10 @@ public class EnemyBehaviours : MonoBehaviour
     [SerializeField] private float hitCooldownMax;
     [SerializeField] private float currentHitCooldown;
     public float hitCooldownDelay;
+    public bool wasFollowing;
+    [SerializeField] private float wanderTime;
+    private float currentWanderTime;
+    private Vector3 playerLastSeen;
     // Start is called before the first frame update
     void Start()
     {
@@ -39,8 +43,9 @@ public class EnemyBehaviours : MonoBehaviour
                 currentSpeed = maxSpeed;
             }
             transform.position += (displacement * currentSpeed * Time.deltaTime);
-
-        }
+            wasFollowing = true;
+            playerLastSeen = displacement;
+        } 
 
         if (Vector2.Distance(player.transform.position, transform.position) <= damageDistance)
         {
@@ -48,6 +53,21 @@ public class EnemyBehaviours : MonoBehaviour
             {
                 player.SendMessage("TakeDamage", RollDamage());
                 currentHitCooldown = 0;
+            }
+        }
+        if(Vector2.Distance(player.transform.position, transform.position) >= targetDistance)
+        {
+            if(wasFollowing)
+            {
+                currentWanderTime -= Time.deltaTime;
+                if(currentWanderTime > 0)
+                {
+                    transform.position += (playerLastSeen * currentSpeed * Time.deltaTime);
+                } else
+                {
+                    currentWanderTime = wanderTime;
+                    wasFollowing = false;
+                }
             }
         }
     }
