@@ -117,3 +117,4 @@ Received Import Request.
 Start importing Assets/ScriptableObjects/Pickups/Lol.asset using Guid(4f3d751e029066f4e9c04af2a795f641) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'fbed27ac7f4f67c311e74ed78ead4968') in 0.008949 seconds
   Import took 0.011087 seconds .
 
+AssetImportWorkerClient::OnTransportError - code=2 error=End of file
