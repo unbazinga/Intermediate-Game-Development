@@ -1,9 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class EnemyBehaviours : MonoBehaviour
 {
+    [SerializeField] private float hitCooldownMax;
+    [SerializeField] private float currentHitCooldown;
+    [SerializeField] private float wanderTime;
+    [SerializeField] private float explosiveForce;
+    [SerializeField] private float defBlowUpTimer;
+    [SerializeField] private float blowUpDelayDef;
+    private Vector3 playerLastSeen;
+    public GameObject player;
     public float targetDistance;
     public float damageDistance;
     public float moveSpeed;
@@ -12,17 +21,17 @@ public class EnemyBehaviours : MonoBehaviour
     public float acceleration;
     public float maxDamage, minDamage;
     private float damage;
-    public GameObject player;
-    [SerializeField] private float hitCooldownMax;
-    [SerializeField] private float currentHitCooldown;
     public float hitCooldownDelay;
     public bool wasFollowing;
-    [SerializeField] private float wanderTime;
     private float currentWanderTime;
-    private Vector3 playerLastSeen;
+    private bool canBlowUp;
+    private float blowUpTimer;
+    private float blowUpDelay;
+
     // Start is called before the first frame update
     void Start()
     {
+        blowUpDelay = 0f;
         player = GameObject.FindGameObjectWithTag("Player");
     }
 
@@ -30,8 +39,11 @@ public class EnemyBehaviours : MonoBehaviour
     void Update()
     {
         currentHitCooldown += (Time.deltaTime / 2f);
+        blowUpTimer += Time.deltaTime;
         if(currentHitCooldown > hitCooldownMax)
             currentHitCooldown = hitCooldownMax;
+        if (blowUpTimer > defBlowUpTimer)
+            blowUpTimer = defBlowUpTimer;
         
         Vector3 displacement = player.transform.position - transform.position;
         displacement = displacement.normalized;
@@ -51,8 +63,13 @@ public class EnemyBehaviours : MonoBehaviour
         {
             if (currentHitCooldown >= hitCooldownMax)
             {
-                player.SendMessage("TakeDamage", RollDamage());
-                currentHitCooldown = 0;
+                blowUpDelay += Time.deltaTime;
+                if (blowUpTimer >= defBlowUpTimer)
+                {
+                    canBlowUp = true;
+                    BlowUp();
+                    blowUpTimer = 0f;
+                }
             }
         }
         if(Vector2.Distance(player.transform.position, transform.position) >= targetDistance)
@@ -67,6 +84,7 @@ public class EnemyBehaviours : MonoBehaviour
                 {
                     currentWanderTime = wanderTime;
                     wasFollowing = false;
+                    
                 }
             }
         }
@@ -75,11 +93,30 @@ public class EnemyBehaviours : MonoBehaviour
     {
         return damage = Random.Range(minDamage, maxDamage);
     }
+
+    void BlowUp()
+    {
+        if (!canBlowUp) return;
+
+        if (blowUpDelay >= blowUpDelayDef)
+        {
+            player.GetComponent<Rigidbody2D>().AddForce(explosiveForce * -player.transform.forward, ForceMode2D.Impulse);
+            player.SendMessage("TakeDamage", (RollDamage() / Vector2.Distance(this.transform.position, player.transform.position)));
+            canBlowUp = false;
+            blowUpDelay = 0;
+            Debug.Log("Boom");
+            Destroy(this.gameObject);
+            
+        }
+            
+    }
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, targetDistance);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, damageDistance);
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawLine(transform.position, damageDistance * transform.forward);
     }
 }
